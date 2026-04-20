@@ -1,5 +1,4 @@
-# DCE-e-cig
-Orden para correr los archivos DCE e-cig 
+# DCE-e-cig - Orden para correr los archivos DCE e-cig 
 
 1. DCEe_01_CleanData: depura, valida y clasifica las encuestas según las cuotas establecidas (edad, género y tipo de consumidor).
 
