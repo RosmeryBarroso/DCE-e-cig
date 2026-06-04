@@ -13,12 +13,11 @@ library(writexl)
 library(tidyverse)
 library(gridExtra)
 
-### Define the case to run. Just edit the index of pais and grupo in line 26
-grupo = c("all","SOLOCONVEN1825","SOLOCONVEN26","VAPEA1825","VAPEA26","NOFUMA1825","SOLOCONVEN","VAPEA", "VAPEA1825exc","VAPEA26exc","VAPEA1825dual","VAPEA26dual","VAPEAexc","VAPEAdual", "TIMEBAJO", "TIMEBAJOexcluyendo")
-#           1          2              3             4           5         6          7           8            9             10             11           12            13         14            15
 
-ID <- 10
-CASO = paste(grupo[ID], sep="_")
+### Define the case to run. Just edit the index of pais and grupo in line 26
+grupo = c("all","SOLOCONVEN1825","SOLOCONVEN26","VAPEA1825","VAPEA26","NOFUMA1825","SOLOCONVEN","VAPEA","VAPEA1825exc","VAPEA26exc","VAPEA1825dual","VAPEA26dual","VAPEAexc","VAPEAdual","allnostraight_line","alltwomin","allt150","allt180", "all90sec", "SOLOCONVEN182590sec", "SOLOCONVEN2690sec", "VAPEA182590sec", "VAPEA2690sec", "NOFUMA182590sec", "SOLOCONVEN90sec", "VAPEA90sec", "VAPEAexc90sec", "VAPEAdual90sec", "VAPEA1825exc90sec", "VAPEA26exc90sec", "VAPEA1825dual90sec", "VAPEA26dual90sec" )
+#           1          2              3             4           5         6            7           8          9             10            11              12           13          14         15                    16        17         18           19              20                   21                22              23                 24                25                26           27                 28                29                     30                  31                32
+CASO = paste(grupo[ID],sep="_")
 print(CASO)
 
 apollo_initialise()
@@ -39,21 +38,56 @@ database  <- databasem
 
 conda = "1==1"
 
-if (grepl("all"            , CASO, ignore.case = TRUE)) conda = paste(conda, " & NOFUMA1825xx != 1")
-if (grepl("SOLOCONVEN1825" , CASO, ignore.case = TRUE)) conda = paste(conda, " & SOLOCONVEN1825xx == 1")
-if (grepl("SOLOCONVEN26"   , CASO, ignore.case = TRUE)) conda = paste(conda, " & SOLOCONVEN26pxx==1")
-if (grepl("VAPEA1825"      , CASO, ignore.case = TRUE)) conda = paste(conda, " & VAPEA1825xx==1")
-if (grepl("VAPEA26"        , CASO, ignore.case = TRUE)) conda = paste(conda, " & VAPEA26pxx==1")
-if (grepl("VAPEA1825exc"   , CASO, ignore.case = TRUE)) conda = paste(conda, " & VAPEA1825exc==1")
-if (grepl("VAPEA26exc"     , CASO, ignore.case = TRUE)) conda = paste(conda, " & VAPEA26pexc==1")
-if (grepl("VAPEA1825dual"  , CASO, ignore.case = TRUE)) conda = paste(conda, " & VAPEA1825dual==1")
-if (grepl("VAPEA26dual"    , CASO, ignore.case = TRUE)) conda = paste(conda, " & VAPEA26pdual==1")
-if (grepl("NOFUMA1825"     , CASO, ignore.case = TRUE)) conda = paste(conda, " & NOFUMA1825xx==1")
-if (grepl("SOLOCONVEN"     , CASO, ignore.case = TRUE)) conda = paste(conda, " & (SOLOCONVEN1825xx == 1 | SOLOCONVEN26pxx==1)")
-if (grepl("VAPEA"          , CASO, ignore.case = TRUE)) conda = paste(conda, " & (VAPEA1825xx==1 | VAPEA26pxx==1)")
-if (grepl("VAPEAexc"       , CASO, ignore.case = TRUE)) conda = paste(conda, " & (VAPEA1825exc==1 | VAPEA26pexc==1)")
-if (grepl("VAPEAdual"      , CASO, ignore.case = TRUE)) conda = paste(conda, " & (VAPEA1825dual==1 | VAPEA26pdual==1)")
-if (grepl("TIMEBAJO"       , CASO, ignore.case = TRUE)) conda = paste(conda, " & cat_time == 1")
+if (grepl("all"                   , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx != 1")
+if (grepl("allnostraight_line"    , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx != 1 & straight_line!=1")
+if (grepl("all90sec"              , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx != 1 & (cat_time>=-1)")
+
+if (grepl("alltwomin"             , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx != 1 & (cat_time>=-1)")
+if (grepl("allt150"               , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx != 1 & (cat_time>=2)")
+if (grepl("allt180"               , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx != 1 & (cat_time>=3)")
+
+if (grepl("SOLOCONVEN1825"        , CASO, ignore.case = TRUE)) conda=paste(conda," & SOLOCONVEN1825xx == 1")
+if (grepl("SOLOCONVEN182590sec"   , CASO, ignore.case = TRUE)) conda=paste(conda," & SOLOCONVEN1825xx == 1 & (cat_time>=-1)")
+
+if (grepl("SOLOCONVEN26"          , CASO, ignore.case = TRUE)) conda=paste(conda," & SOLOCONVEN26pxx==1")
+if (grepl("SOLOCONVEN2690sec"     , CASO, ignore.case = TRUE)) conda=paste(conda," & SOLOCONVEN26pxx==1 & (cat_time>=-1)")
+
+if (grepl("SOLOCONVEN90sec"       , CASO, ignore.case = TRUE)) conda=paste(conda," & (SOLOCONVEN1825xx == 1 | SOLOCONVEN26pxx==1) & (cat_time>=-1)")
+
+if (grepl("VAPEA1825"             , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA1825xx==1")
+if (grepl("VAPEA182590sec"        , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA1825xx==1 & (cat_time>=-1)")
+
+if (grepl("VAPEA26"               , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA26pxx==1")
+if (grepl("VAPEA2690sec"          , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA26pxx==1 & (cat_time>=-1)")
+
+if (grepl("VAPEA1825exc"          , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA1825exc==1")
+if (grepl("VAPEA1825exc90sec"          , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA1825exc==1 & (cat_time>=-1)")
+
+if (grepl("VAPEA26exc"            , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA26pexc==1")
+if (grepl("VAPEA26exc90sec"       , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA26pexc==1 & (cat_time>=-1)")
+
+if (grepl("VAPEA1825dual"         , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA1825dual==1")
+if (grepl("VAPEA1825dual90sec"    , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA1825dual==1 & (cat_time>=-1)")
+
+
+if (grepl("VAPEA26dual"           , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA26pdual==1")
+if (grepl("VAPEA26dual90sec"      , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEA26pdual==1 & (cat_time>=-1)")
+
+
+
+if (grepl("NOFUMA1825"            , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx==1")
+if (grepl("NOFUMA182590sec"       , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMA1825xx==1 & (cat_time>=-1)")
+
+if (grepl("SOLOCONVEN"            , CASO, ignore.case = TRUE)) conda=paste(conda," & (SOLOCONVEN1825xx == 1 | SOLOCONVEN26pxx==1)")
+if (grepl("VAPEA"                 , CASO, ignore.case = TRUE)) conda=paste(conda," & (VAPEA1825xx==1 |  VAPEA26pxx==1)")
+if (grepl("VAPEA90sec"            , CASO, ignore.case = TRUE)) conda=paste(conda," & (VAPEA1825xx==1 |  VAPEA26pxx==1) & (cat_time>=-1)")
+if (grepl("VAPEAexc"              , CASO, ignore.case = TRUE)) conda=paste(conda," & (VAPEA1825exc==1 |  VAPEA26pexc==1)")
+if (grepl("VAPEAexc90sec"         , CASO, ignore.case = TRUE)) conda=paste(conda," & (VAPEA1825exc==1 |  VAPEA26pexc==1) & (cat_time>=-1)")
+if (grepl("VAPEAdual"             , CASO, ignore.case = TRUE)) conda=paste(conda," & (VAPEA1825dual==1 |  VAPEA26pdual==1)")
+if (grepl("VAPEAdual90sec"        , CASO, ignore.case = TRUE)) conda=paste(conda," & (VAPEA1825dual==1 |  VAPEA26pdual==1) & (cat_time>=-1)")
+
+
+
 
 print(conda)
 database <- subset(databasem, eval(parse(text = conda)))
