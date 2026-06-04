@@ -4,8 +4,8 @@
 **************** RESULTADOS FINALES - COLOMBIA ******************************************************
 ************************************************************************************************ 
 
-global RunPath "C:/Users/Usuario/Universidad del rosario/Control Tabaco Facultad Economica - Documentos/DCE e-cig/Resultados finales" 
-*global RunPath "C:\Users\paul.rodriguez\Universidad del rosario\Control Tabaco Facultad Economica - Documentos\DCE e-cig\Resultados finales"
+*global RunPath "C:/Users/Usuario/Universidad del rosario/Control Tabaco Facultad Economica - Documentos/DCE e-cig/Resultados finales" 
+global RunPath "C:\Users\paul.rodriguez\Universidad del rosario\Control Tabaco Facultad Economica - Documentos\DCE e-cig\Resultados finales"
 
 * Crear carpeta de salida si no existe
 capture mkdir "$RunPath/Output"
@@ -49,7 +49,9 @@ replace task`x'= Preg`x'Fumadores
 }
 
 
-keep id chosen_option EncuestaRandnumber task1 task2 task3 task4 task5 task6 task7 task8 SOLOCONVEN* NOFUMA* VAPEA* female cat_time
+keep id chosen_option EncuestaRandnumber task1 task2 task3 task4 task5 task6 task7 task8 ///
+     Preg1RAND Preg2RAND Preg3RAND Preg4RAND Preg5RAND Preg6RAND Preg7RAND Preg8RAND ///
+     SOLOCONVEN* NOFUMA* VAPEA* female cat_time
 
 *******************************************************************
 ******* Reshape (remodelar) responses by ID ***********************************
@@ -73,6 +75,41 @@ replace chosen_option = "4" if chosen_option == "Ninguna de las anteriores" | ch
 
 destring chosen_option, replace 
 drop task 
+
+
+* Crear variable de posición elegida
+* (después del destring chosen_option, antes de drop task)
+
+* Traer el RAND correspondiente a cada fila según choiceTask
+gen rand_preg = .
+forvalues i = 1/8 {
+    replace rand_preg = Preg`i'RAND if choiceTask == `i'
+}
+
+* Crear posición elegida según RAND y producto elegido
+* RAND=1: Convencional(pos1), Desechable(pos2), Recargable(pos3)
+* RAND=2: Desechable(pos1), Recargable(pos2), Convencional(pos3)
+* RAND=3: Recargable(pos1), Convencional(pos2), Desechable(pos3)
+
+gen pos_elegida = .
+
+* chosen_option: 1=Desechable, 2=Recargable, 3=Convencional, 4=Ninguna
+
+replace pos_elegida = 2 if rand_preg == 1 & chosen_option == 1  // Desechable → pos 2
+replace pos_elegida = 3 if rand_preg == 1 & chosen_option == 2  // Recargable → pos 3
+replace pos_elegida = 1 if rand_preg == 1 & chosen_option == 3  // Convencional → pos 1
+
+replace pos_elegida = 1 if rand_preg == 2 & chosen_option == 1  // Desechable → pos 1
+replace pos_elegida = 2 if rand_preg == 2 & chosen_option == 2  // Recargable → pos 2
+replace pos_elegida = 3 if rand_preg == 2 & chosen_option == 3  // Convencional → pos 3
+
+replace pos_elegida = 3 if rand_preg == 3 & chosen_option == 1  // Desechable → pos 3
+replace pos_elegida = 1 if rand_preg == 3 & chosen_option == 2  // Recargable → pos 1
+replace pos_elegida = 2 if rand_preg == 3 & chosen_option == 3  // Convencional → pos 2
+
+* Ninguna = missing en posición (no tiene posición real)
+replace pos_elegida = 4 if chosen_option == 4
+
 
 
 ********************************************************************
@@ -257,29 +294,67 @@ replace task`x'= Preg`x'Fumadores
 * Organize ID
 drop id 
 gen id= _n
-keep id chosen_option EncuestaRandnumber task1 task2 task3 task4 task5 task6 task7 task8 SOLOCONVEN* NOFUMA* VAPEA* female cat_time
+
+keep id chosen_option EncuestaRandnumber task1 task2 task3 task4 task5 task6 task7 task8 ///
+     Preg1RAND Preg2RAND Preg3RAND Preg4RAND Preg5RAND Preg6RAND Preg7RAND Preg8RAND ///
+     SOLOCONVEN* NOFUMA* VAPEA* female cat_time
 
 *******************************************************************
-******* Reshape responses by ID ***********************************
+******* Reshape (remodelar) responses by ID ***********************************
 ******************************************************************* 
 rename EncuestaRandnumber block 
 
-* Reshape by id and task. Takes id as the identificator variable for the rows and consolidate all the task_"x" into a single variable called task. 
+* Reshape by id and task. Takes id as the identificator variable for the rows and consolidate all the task"x" into a single variable called task. 
 * Variable task has the responses to each choice situation ordered by choice task and block
 
 reshape long task , i(id) j(choiceTask)
 
 * Replace chosen_option
 tostring chosen_option, replace 
-replace chosen_option=task 
+replace chosen_option=task //Creamos una variable choice optipon igual a task
 
 replace chosen_option = "1" if chosen_option == "Desechable" 
 replace chosen_option = "2" if chosen_option == "Recargable" 	
 replace chosen_option = "3" if chosen_option == "Convencional" 	
 replace chosen_option = "4" if chosen_option == "Ninguna de las anteriores" | chosen_option == "Otro" | missing(chosen_option)
+//Lo volvemos categoría
 
 destring chosen_option, replace 
 drop task 
+
+
+* Crear variable de posición elegida
+* (después del destring chosen_option, antes de drop task)
+
+* Traer el RAND correspondiente a cada fila según choiceTask
+gen rand_preg = .
+forvalues i = 1/8 {
+    replace rand_preg = Preg`i'RAND if choiceTask == `i'
+}
+
+* Crear posición elegida según RAND y producto elegido
+* RAND=1: Convencional(pos1), Desechable(pos2), Recargable(pos3)
+* RAND=2: Desechable(pos1), Recargable(pos2), Convencional(pos3)
+* RAND=3: Recargable(pos1), Convencional(pos2), Desechable(pos3)
+
+gen pos_elegida = .
+
+* chosen_option: 1=Desechable, 2=Recargable, 3=Convencional, 4=Ninguna
+
+replace pos_elegida = 2 if rand_preg == 1 & chosen_option == 1  // Desechable → pos 2
+replace pos_elegida = 3 if rand_preg == 1 & chosen_option == 2  // Recargable → pos 3
+replace pos_elegida = 1 if rand_preg == 1 & chosen_option == 3  // Convencional → pos 1
+
+replace pos_elegida = 1 if rand_preg == 2 & chosen_option == 1  // Desechable → pos 1
+replace pos_elegida = 2 if rand_preg == 2 & chosen_option == 2  // Recargable → pos 2
+replace pos_elegida = 3 if rand_preg == 2 & chosen_option == 3  // Convencional → pos 3
+
+replace pos_elegida = 3 if rand_preg == 3 & chosen_option == 1  // Desechable → pos 3
+replace pos_elegida = 1 if rand_preg == 3 & chosen_option == 2  // Recargable → pos 1
+replace pos_elegida = 2 if rand_preg == 3 & chosen_option == 3  // Convencional → pos 2
+
+* Ninguna = missing en posición (no tiene posición real)
+replace pos_elegida = 4 if chosen_option == 4
 
 **# Assign each choice task (order in the questions for each participant) to the choice_situation generated in ngene  
 gen choice_situation=.
@@ -451,29 +526,68 @@ replace task`x'= Preg`x'Fumadores
 * Organize ID
 drop id 
 gen id= _n
-keep id chosen_option EncuestaRandnumber task1 task2 task3 task4 task5 task6 task7 task8 SOLOCONVEN* NOFUMA* VAPEA* female cat_time
+
+keep id chosen_option EncuestaRandnumber task1 task2 task3 task4 task5 task6 task7 task8 ///
+     Preg1RAND Preg2RAND Preg3RAND Preg4RAND Preg5RAND Preg6RAND Preg7RAND Preg8RAND ///
+     SOLOCONVEN* NOFUMA* VAPEA* female cat_time
 
 *******************************************************************
-******* Reshape responses by ID ***********************************
+******* Reshape (remodelar) responses by ID ***********************************
 ******************************************************************* 
 rename EncuestaRandnumber block 
 
-* Reshape by id and task. Takes id as the identificator variable for the rows and consolidate all the task_"x" into a single variable called task. 
+* Reshape by id and task. Takes id as the identificator variable for the rows and consolidate all the task"x" into a single variable called task. 
 * Variable task has the responses to each choice situation ordered by choice task and block
 
 reshape long task , i(id) j(choiceTask)
 
 * Replace chosen_option
 tostring chosen_option, replace 
-replace chosen_option=task 
+replace chosen_option=task //Creamos una variable choice optipon igual a task
 
 replace chosen_option = "1" if chosen_option == "Desechable" 
 replace chosen_option = "2" if chosen_option == "Recargable" 	
 replace chosen_option = "3" if chosen_option == "Convencional" 	
 replace chosen_option = "4" if chosen_option == "Ninguna de las anteriores" | chosen_option == "Otro" | missing(chosen_option)
+//Lo volvemos categoría
 
 destring chosen_option, replace 
 drop task 
+
+
+* Crear variable de posición elegida
+* (después del destring chosen_option, antes de drop task)
+
+* Traer el RAND correspondiente a cada fila según choiceTask
+gen rand_preg = .
+forvalues i = 1/8 {
+    replace rand_preg = Preg`i'RAND if choiceTask == `i'
+}
+
+* Crear posición elegida según RAND y producto elegido
+* RAND=1: Convencional(pos1), Desechable(pos2), Recargable(pos3)
+* RAND=2: Desechable(pos1), Recargable(pos2), Convencional(pos3)
+* RAND=3: Recargable(pos1), Convencional(pos2), Desechable(pos3)
+
+gen pos_elegida = .
+
+* chosen_option: 1=Desechable, 2=Recargable, 3=Convencional, 4=Ninguna
+
+replace pos_elegida = 2 if rand_preg == 1 & chosen_option == 1  // Desechable → pos 2
+replace pos_elegida = 3 if rand_preg == 1 & chosen_option == 2  // Recargable → pos 3
+replace pos_elegida = 1 if rand_preg == 1 & chosen_option == 3  // Convencional → pos 1
+
+replace pos_elegida = 1 if rand_preg == 2 & chosen_option == 1  // Desechable → pos 1
+replace pos_elegida = 2 if rand_preg == 2 & chosen_option == 2  // Recargable → pos 2
+replace pos_elegida = 3 if rand_preg == 2 & chosen_option == 3  // Convencional → pos 3
+
+replace pos_elegida = 3 if rand_preg == 3 & chosen_option == 1  // Desechable → pos 3
+replace pos_elegida = 1 if rand_preg == 3 & chosen_option == 2  // Recargable → pos 1
+replace pos_elegida = 2 if rand_preg == 3 & chosen_option == 3  // Convencional → pos 2
+
+* Ninguna = missing en posición (no tiene posición real)
+replace pos_elegida = 4 if chosen_option == 4
+
 
 **# Assign each choice task (order in the questions for each participant) to the choice_situation generated in ngene  
 gen choice_situation=.
@@ -629,35 +743,57 @@ export delimited "price_dummy.csv", replace
 
 */
 
+
 order unique_id block choiceset
 export delimited "price_continous.csv", replace
 save "price_continous.dta", replace 
 
+////////////////////////////////////////////////////////////////////////////////
+**# Estadísticas ==============================================================
+
+* Colapsar a nivel persona para los reportes
+use "price_continous.dta", clear
+
+lab def cat_time -3 "Menos 60 segs" -2 "60-90 segs" -1 "90-120 segs" 1 "120-150 segs" 2 "150-180 segs" 3 "180-210 segs" 4 "210-240 segs" 5 "240-270 segs" 6 "270 seg +"
+label val cat_time cat_time	
+
+keep if cat_time>=-1 // 90secs or more !!!!!!!!!!!
 
 
-* ============================================================
-* ANÁLISIS DE PATRONES DE RESPUESTA - VERSIÓN CORREGIDA
-* ============================================================
+tab chosen_option
 
-* --- 0. Verificar estructura básica ---
-codebook unique_id chosen_option
-tab chosen_option, missing
+gen     pais = "Colombia"  if col==1
+replace pais = "Argentina" if arg==1
+replace pais = "Chile" if chi==1
 
-* ============================================================
-* PASO 1: Crear todas las variables necesarias en la base long
-* ============================================================
+* Basic time statistics
+preserve
+duplicates drop unique_id, force
+tab cat_time
+restore
+
+* ANÁLISIS DE PATRONES DE RESPUESTA 
+
+
+* Verificar estructura básica
+codebook unique_id pos_elegida
+tab pos_elegida, missing
+
+capture drop n_preguntas freq_opcion n_opciones_distintas opcion_modal max_freq concentracion straight_line casi_straightline
+
+* Crear todas las variables necesarias en la base long
 
 * Cuántas preguntas respondió cada persona (debe ser 8)
 bysort unique_id: gen n_preguntas = _N
 
 * Cuántas veces eligió cada opción cada persona
-bysort unique_id chosen_option: gen freq_opcion = _N
+bysort unique_id pos_elegida: gen freq_opcion = _N
 
 * Cuántas opciones DISTINTAS eligió cada persona
-bysort unique_id: egen n_opciones_distintas = nvals(chosen_option)
+bysort unique_id: egen n_opciones_distintas = nvals(pos_elegida)
 
 * Opción más frecuente por persona (moda)
-bysort unique_id (freq_opcion chosen_option): gen opcion_modal = chosen_option[_N]
+bysort unique_id (freq_opcion pos_elegida): gen opcion_modal = pos_elegida[_N]
 
 * Frecuencia máxima (cuántas veces repitió su opción más común)
 bysort unique_id: egen max_freq = max(freq_opcion)
@@ -668,10 +804,6 @@ gen concentracion = max_freq / n_preguntas
 * Flags de straight-lining
 gen straight_line     = (n_opciones_distintas == 1)
 gen casi_straightline = (max_freq >= 7)
-
-* ============================================================
-* PASO 2: Colapsar a nivel persona para los reportes
-* ============================================================
 
 preserve
     bysort unique_id: keep if _n == 1   // una fila por persona
@@ -708,6 +840,23 @@ preserve
 restore
 
 
+preserve
+    bysort unique_id: keep if _n == 1
+
+    gen distinct_label = ""
+    replace distinct_label = "Always chose the same option"  if n_opciones_distintas == 1
+    replace distinct_label = "Alternated between 2 options"  if n_opciones_distintas == 2
+    replace distinct_label = "Alternated between 3 options"  if n_opciones_distintas == 3
+    replace distinct_label = "Used all 4 available options"  if n_opciones_distintas == 4
+    tab distinct_label
+
+    gen modal_label = ""
+    replace modal_label = "Option 1" if opcion_modal == 1
+    replace modal_label = "Option 2" if opcion_modal == 2
+    replace modal_label = "Option 3" if opcion_modal == 3
+    replace modal_label = "Option 4" if opcion_modal == 4
+    tab modal_label
+restore
 
 
 preserve
