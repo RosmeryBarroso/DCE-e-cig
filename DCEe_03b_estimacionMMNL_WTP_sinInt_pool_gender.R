@@ -8,10 +8,6 @@
 #### LOAD LIBRARY AND DEFINE CORE SETTINGS                       ####
 # ################################################################# #
 
-
-
-
-
 ### Clear memory
 rm(database,databasem,apollo_inputs,apollo_control,apollo_draws)
 print(ID)
@@ -26,8 +22,9 @@ library(gridExtra)
 
 
 ### Define the case to run. Just edit the index of pais and grupo in line 26
-grupo = c("SOLOCONVENMUJER", "SOLOCONVENHOMBRE", "VAPEAMUJERexc", "VAPEAMUJERdual","VAPEAHOMBREexc", "VAPEAHOMBREdual", "NOFUMAMUJER", "NOFUMAHOMBRE")
-#              1                      2                3                 4                5                   6               7                8
+grupo = c("SOLOCONVENMUJER", "SOLOCONVENHOMBRE", "VAPEAMUJERexc", "VAPEAMUJERdual", "VAPEAHOMBREexc", "VAPEAHOMBREdual", "NOFUMAMUJER", "NOFUMAHOMBRE", "SOLOCONVENMUJER90sec", "SOLOCONVENHOMBRE90sec", "VAPEAMUJERexc90sec", "VAPEAMUJERdual90sec", "VAPEAHOMBREexc90sec", "VAPEAHOMBREdual90sec", "NOFUMAMUJER90sec", "NOFUMAHOMBRE90sec")
+#              1                      2                3                 4                5                   6               7                8                 9                      10                        11                    12                      13                  14                        15               16
+
 CASO = paste(grupo[ID],sep="_")
 print(CASO)
 
@@ -77,6 +74,15 @@ if (grepl("NOFUMAMUJER"     , CASO, ignore.case = TRUE)) conda=paste(conda," & N
 if (grepl("NOFUMAHOMBRE"     , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMAHOMBRExx ==1")
 
 
+
+if (grepl("SOLOCONVENMUJER90sec"  , CASO, ignore.case = TRUE)) conda=paste(conda," & SOLOCONVENMUJERxx ==1 & (cat_time>=-1)")
+if (grepl("SOLOCONVENHOMBRE90sec" , CASO, ignore.case = TRUE)) conda=paste(conda," & SOLOCONVENHOMBRExx ==1 & (cat_time>=-1)")
+if (grepl("VAPEAMUJERexc90sec"    , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEAMUJERexcxx ==1 & (cat_time>=-1)")
+if (grepl("VAPEAMUJERdual90sec"   , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEAMUJERdualxx ==1 & (cat_time>=-1)")
+if (grepl("VAPEAHOMBREexc90sec"   , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEAHOMBREexcxx ==1 & (cat_time>=-1)")
+if (grepl("VAPEAHOMBREdual90sec"  , CASO, ignore.case = TRUE)) conda=paste(conda," & VAPEAHOMBREdualxx ==1 & (cat_time>=-1)")
+if (grepl("NOFUMAMUJER90sec"      , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMAMUJERxx ==1 & (cat_time>=-1)")
+if (grepl("NOFUMAHOMBRE90sec"     , CASO, ignore.case = TRUE)) conda=paste(conda," & NOFUMAHOMBRExx ==1 & (cat_time>=-1)")
 
 print(conda)
 database <- subset(databasem, eval(parse(text =conda)) )
